@@ -5,6 +5,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from app.config import settings
 from app.rooms import rooms as rooms_mgr
+from app.services.concordance import ConcordanceEngine
 from app.services.distributor import AudioDistributor
 from app.services.speechmatics import SpeechmaticsService
 from app.services.thymia import ThymiaService
@@ -57,6 +58,11 @@ async def audio_ingress(ws: WebSocket, role: str, room_id: str) -> None:
             room.speechmatics_tasks[_THYMIA_TASK_KEY] = th_task
             logger.info("[audio] thymia task spawned for %s", room_id)
 
+        if room.concordance_engine is None:
+            room.concordance_engine = ConcordanceEngine(room)
+            room.concordance_engine.start()
+            logger.info("[audio] concordance engine started for %s", room_id)
+
     logger.info("[audio] %s@%s connected", role, room_id)
     n_frames = 0
     try:
@@ -103,3 +109,12 @@ async def audio_ingress(ws: WebSocket, role: str, room_id: str) -> None:
             room.speechmatics_tasks.pop(_THYMIA_TASK_KEY, None)
             room.thymia_service = None
             logger.info("[audio] thymia task cancelled for %s", room_id)
+
+            if room.concordance_engine is not None:
+                room.concordance_engine.stop()
+                try:
+                    await room.concordance_engine._task  # best-effort await
+                except (asyncio.CancelledError, Exception):
+                    pass
+                room.concordance_engine = None
+                logger.info("[audio] concordance engine stopped for %s", room_id)

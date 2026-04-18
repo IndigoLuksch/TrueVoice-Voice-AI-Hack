@@ -37,7 +37,11 @@ async def dashboard_stream(ws: WebSocket, room_id: str) -> None:
     try:
         while True:
             evt = await queue.get()
-            await ws.send_text(json.dumps(evt))
+            try:
+                await ws.send_text(json.dumps(evt))
+            except (WebSocketDisconnect, RuntimeError):
+                # Client gone mid-send — stop cleanly.
+                return
     except WebSocketDisconnect:
         pass
     finally:

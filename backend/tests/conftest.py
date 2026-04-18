@@ -76,3 +76,23 @@ def _stub_thymia(monkeypatch, request):
         "_default_client_factory",
         lambda api_key, room_id: _StubClient(),
     )
+
+
+@pytest.fixture(autouse=True)
+def _stub_claude(monkeypatch, request):
+    if "integration" in request.node.keywords:
+        return
+    from app.services import claude as claude_module
+
+    class _StubResponse:
+        content = [type("T", (), {"type": "text", "text": "stubbed gloss"})()]
+
+    class _StubMessages:
+        async def create(self, **_):
+            return _StubResponse()
+
+    class _StubAnthropic:
+        def __init__(self, *a, **kw):
+            self.messages = _StubMessages()
+
+    monkeypatch.setattr(claude_module, "AsyncAnthropic", _StubAnthropic)
