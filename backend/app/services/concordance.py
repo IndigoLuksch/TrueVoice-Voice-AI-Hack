@@ -18,20 +18,25 @@ MINIMIZATION_PATTERNS = [
     r"\bi am fine\b",
     r"\bi['\u2019]?m okay\b",
     r"\bi am okay\b",
-    r"\bdoing okay\b",
-    r"\bi['\u2019]?m good\b",
-    r"\bi am good\b",
-    r"\bdoing (good|well)\b",
+    r"\bi['\u2019]?m (well|good|great)\b",
+    r"\bi am (well|good|great)\b",
+    r"\bdoing (okay|good|well|great|fantastic|fine)\b",
+    r"\b(really|pretty|very|quite) (good|well|fine)\b",
     r"\ball good\b",
     r"\ball right\b",
     r"\balright\b",
     r"\bno problems?\b",
-    r"\bnothing much\b",
+    r"\bno worries\b",
+    r"\bnothing (much|wrong|to (worry|flag))\b",
     r"\bcould be worse\b",
     r"\bcan'?t complain\b",
     r"\bsleep(ing)? (fine|well|okay|ok)\b",
-    r"\bmood is (fine|good|okay|ok)\b",
-    r"\bfeel(ing)? (fine|good|okay|ok)\b",
+    r"\bmood is (fine|good|okay|ok|well)\b",
+    r"\bfeel(ing)? (?:(?:very|really|quite|pretty|so|absolutely|super) )?(fine|good|okay|ok|well|great|fantastic|energetic|happy)\b",
+    r"\bnot (tired|stressed|worried|sad|bad|too bad|a problem)\b",
+    r"\b(had|having) a (good|great|fine) (day|week)\b",
+    r"\bnever better\b",
+    r"\bperfectly (fine|good|okay|ok)\b",
 ]
 _COMPILED = [re.compile(p, re.IGNORECASE) for p in MINIMIZATION_PATTERNS]
 
@@ -45,7 +50,7 @@ DISTRESS_THRESHOLDS: dict[str, float] = {
     "helios.distress": 0.30,
     "helios.stress": 0.35,
     "helios.fatigue": 0.30,
-    "helios.burnout": 0.30,
+    "helios.burnout": 0.25,
     "helios.low_self_esteem": 0.30,
     "apollo.low_mood": 0.30,
     "apollo.low_energy": 0.30,
@@ -53,6 +58,11 @@ DISTRESS_THRESHOLDS: dict[str, float] = {
     "apollo.sleep_issues": 0.30,
     "apollo.nervousness": 0.35,
     "apollo.worry": 0.35,
+    # Psyche affect: high sad / fear / anger with positive verbal content
+    # is a strong concordance signal on its own.
+    "psyche.sad": 0.60,
+    "psyche.fearful": 0.60,
+    "psyche.angry": 0.60,
 }
 
 LOOKBACK_MS = 60_000

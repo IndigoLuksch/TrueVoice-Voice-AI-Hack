@@ -129,7 +129,7 @@ def _extract_segments(message) -> list[tuple[str | None, str]]:
         text = (result.metadata.transcript if result.metadata else "").strip()
         return [(None, text)] if text else []
 
-    segments: list[tuple[str | None, list[str]]] = []
+    segments: list[tuple[str | None, str]] = []
     current_speaker: str | None = "__unset__"
     current_words: list[str] = []
 
@@ -139,7 +139,7 @@ def _extract_segments(message) -> list[tuple[str | None, str]]:
             joined = "".join(current_words).strip()
             joined = joined.replace(" ,", ",").replace(" .", ".").replace(" ?", "?").replace(" !", "!")
             if joined:
-                segments.append((current_speaker, joined.split()))
+                segments.append((current_speaker, joined))
         current_words = []
 
     for r in result.results:
@@ -173,8 +173,8 @@ def _extract_segments(message) -> list[tuple[str | None, str]]:
     flush()
 
     out: list[tuple[str | None, str]] = []
-    for spk, toks in segments:
-        text = "".join(toks).strip()
+    for spk, text in segments:
+        text = text.strip()
         if text:
             out.append((spk, text))
     return out

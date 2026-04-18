@@ -314,6 +314,15 @@ class ThymiaService:
                 "affect": affect,
                 "ts_ms": ts_ms,
             })
+            # Also append to biomarker_history so the concordance engine can
+            # treat high negative affect as a breach, same as helios/apollo.
+            for name, value in affect.items():
+                room.biomarker_history.append({
+                    "model": "psyche",
+                    "name": name,
+                    "value": value,
+                    "ts_ms": ts_ms,
+                })
             emitted = True
 
         return emitted
