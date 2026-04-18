@@ -15,7 +15,7 @@ def test_health_live(live_server):
 
 def test_rooms_create_and_fetch_live(live_server):
     created = httpx.post(f"{live_server}/api/rooms").json()
-    assert len(created["room_id"]) == 8
+    assert len(created["room_id"]) == 4
     fetched = httpx.get(f"{live_server}/api/rooms/{created['room_id']}").json()
     assert fetched["exists"] is True
     assert fetched["created_at_ms"] == created["created_at_ms"]

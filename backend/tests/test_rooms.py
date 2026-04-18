@@ -6,11 +6,12 @@ from fastapi.testclient import TestClient
 from app.rooms import RoomManager
 
 
-def test_create_returns_room_with_8char_id_and_eventbus():
+def test_create_returns_room_with_4digit_id_and_eventbus():
     mgr = RoomManager()
     room = mgr.create()
     assert isinstance(room.room_id, str)
-    assert len(room.room_id) == 8
+    assert len(room.room_id) == 4
+    assert room.room_id.isdigit()
     assert room.eventbus is not None
     # All later-phase service slots default to None / empty.
     assert room.thymia_service is None
@@ -69,7 +70,8 @@ def test_post_rooms_returns_new_room(client):
     assert r.status_code == 200
     body = r.json()
     assert isinstance(body["room_id"], str)
-    assert len(body["room_id"]) == 8
+    assert len(body["room_id"]) == 4
+    assert body["room_id"].isdigit()
     assert isinstance(body["created_at_ms"], int)
 
 

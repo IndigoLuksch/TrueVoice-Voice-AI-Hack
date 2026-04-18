@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import React, { useRef, useState } from "react";
 import { startAudioCapture, AudioCaptureHandle } from "@/lib/audioCapture";
 import { BACKEND_WS } from "@/lib/types";
-import { normalizeRoomId } from "@/lib/utils";
+import { normalizeRoomId, ROOM_CODE_LEN } from "@/lib/utils";
 
 export default function OnlinePatientPage() {
   const params = useParams();
@@ -16,10 +16,12 @@ export default function OnlinePatientPage() {
   const streamRef = useRef<MediaStream | null>(null);
   const captureRef = useRef<AudioCaptureHandle | null>(null);
 
-  if (!roomId) {
+  if (!roomId || roomId.length !== ROOM_CODE_LEN) {
     return (
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center gap-4 px-6">
-        <p className="text-red-400 font-mono text-sm">Invalid room in URL.</p>
+        <p className="text-red-400 font-mono text-base md:text-lg">
+          Invalid room code. Use a {ROOM_CODE_LEN}-digit code from the telehealth lobby.
+        </p>
         <Link href="/online" className="text-sm underline text-neutral-400 hover:text-white">
           Back to telehealth
         </Link>
@@ -40,7 +42,7 @@ export default function OnlinePatientPage() {
       const meta = (await check.json()) as { exists: boolean };
       if (!meta.exists) {
         throw new Error(
-          "This room was not found on the server. Use the exact 8-character id from the person who created the room, or create a new session — rooms are cleared if the backend restarted.",
+          "This room was not found on the server. Use the exact 4-digit code from whoever created the room, or start a new session — rooms are cleared if the backend restarted.",
         );
       }
 
@@ -102,8 +104,8 @@ export default function OnlinePatientPage() {
               Patient · live
             </span>
           </div>
-          <p className="font-mono text-sm text-neutral-300">
-            room <span className="text-orange-400">{roomId}</span>
+          <p className="font-mono text-lg md:text-xl text-neutral-300">
+            room <span className="text-orange-400 tracking-widest">{roomId}</span>
           </p>
           <p className="mt-4 text-sm text-neutral-500 leading-relaxed">
             Your microphone is sending audio for transcription and biomarkers. Keep this tab
@@ -127,8 +129,8 @@ export default function OnlinePatientPage() {
         ← Telehealth
       </Link>
       <h1 className="text-2xl font-mono text-orange-500">TRUEVOICE · Patient</h1>
-      <p className="font-mono text-sm text-neutral-400">
-        room <span className="text-white">{roomId}</span>
+      <p className="font-mono text-lg md:text-xl text-neutral-400">
+        room <span className="text-white tracking-widest">{roomId}</span>
       </p>
       <button
         type="button"

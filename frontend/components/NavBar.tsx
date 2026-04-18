@@ -11,7 +11,6 @@ export default function NavBar() {
       </Link>
       <div className="flex gap-8 text-[11px] uppercase tracking-widest font-bold text-gray-500">
         <Link href="/" className="hover:text-orange-500 transition-colors">Home</Link>
-        <Link href="/about" className="hover:text-orange-500 transition-colors">About</Link>
         <Link href="/online" className="hover:text-orange-500 transition-colors">Online</Link>
         <Link href="/in-person" className="hover:text-orange-500 transition-colors">In-Person</Link>
       </div>

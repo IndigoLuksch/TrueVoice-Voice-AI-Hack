@@ -107,7 +107,7 @@ function DemoCard() {
           </span>
           <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-500">
             Live consultation · room{" "}
-            <span className="font-mono text-neutral-800">xq4k8m2a</span>
+            <span className="font-mono text-neutral-800">4829</span>
           </span>
         </div>
         <span className="text-[10px] font-mono text-neutral-400">
@@ -430,17 +430,11 @@ export default function TrueVoiceLanding() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-8 text-[11px] font-bold uppercase tracking-[0.22em] text-neutral-500">
-          <Link href="/about" className="hover:text-neutral-900 transition-colors">
-            About
-          </Link>
           <Link href="/online" className="hover:text-neutral-900 transition-colors">
             Telehealth
           </Link>
           <Link href="/in-person" className="hover:text-neutral-900 transition-colors">
             In-person
-          </Link>
-          <Link href="/test-ui" className="hover:text-neutral-900 transition-colors">
-            Compare demo
           </Link>
         </nav>
 
@@ -530,15 +524,6 @@ export default function TrueVoiceLanding() {
                     strokeLinejoin="round"
                   />
                 </svg>
-              </Link>
-              <Link
-                href="/test-ui"
-                className="group inline-flex items-center gap-2 px-3 py-3.5 text-[12px] font-bold uppercase tracking-[0.22em] text-neutral-500 hover:text-orange-500 transition-colors"
-              >
-                See codec demo
-                <span className="text-[10px] font-mono text-neutral-300 group-hover:text-orange-400">
-                  /compare
-                </span>
               </Link>
             </div>
           </BlurFade>
@@ -652,7 +637,7 @@ export default function TrueVoiceLanding() {
           <BlurFade inView>
             <div className="max-w-2xl">
               <div className="text-[10px] font-bold tracking-[0.25em] uppercase text-orange-500 mb-2">
-                · Three consultation surfaces
+                · Consultation modes
               </div>
               <h2 className="font-['Space_Grotesk'] text-3xl md:text-5xl font-bold tracking-tight">
                 One signal.
@@ -664,7 +649,7 @@ export default function TrueVoiceLanding() {
             </div>
           </BlurFade>
 
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
             <BlurFade inView delay={0.1}>
               <ModeCard
                 kicker="01 · Telehealth"
@@ -696,23 +681,6 @@ export default function TrueVoiceLanding() {
                     <path d="M2 19h22" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                     <path d="M10 9.5a3 3 0 106 0" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" fill="none" />
                     <circle cx="13" cy="13" r="1.2" fill="currentColor" />
-                  </svg>
-                }
-              />
-            </BlurFade>
-            <BlurFade inView delay={0.3}>
-              <ModeCard
-                kicker="03 · Codec demo"
-                title="Raw PCM vs Opus VOIP"
-                description="Side-by-side Thymia output on identical audio. Raw 16 kHz versus 24 kbps Opus. A visceral demo of why telehealth biomarkers need our pipeline."
-                href="/test-ui"
-                cta="Open comparison"
-                icon={
-                  <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden>
-                    <g stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-                      <path d="M3 13c2 0 2-5 4-5s2 10 4 10" />
-                      <path d="M13 13c2 0 2-3 4-3s2 6 4 6" opacity="0.45" />
-                    </g>
                   </svg>
                 }
               />

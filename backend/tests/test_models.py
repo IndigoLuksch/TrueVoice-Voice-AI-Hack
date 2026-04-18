@@ -98,5 +98,5 @@ def test_invalid_role_rejected():
 
 
 def test_room_create_response():
-    r = RoomCreateResponse(room_id="abc12345", created_at_ms=1700000000000)
-    assert r.model_dump() == {"room_id": "abc12345", "created_at_ms": 1700000000000}
+    r = RoomCreateResponse(room_id="4829", created_at_ms=1700000000000)
+    assert r.model_dump() == {"room_id": "4829", "created_at_ms": 1700000000000}

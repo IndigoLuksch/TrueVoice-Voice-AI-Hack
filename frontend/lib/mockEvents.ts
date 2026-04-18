@@ -1,6 +1,6 @@
 import type { DashboardEvent } from "./types";
 
-/** Static preview data for `/test-ui` — matches backend dashboard event schema. */
+/** Static preview data for the dashboard design preview page — matches backend dashboard event schema. */
 export const mockEvents: DashboardEvent[] = [
   {
     type: "transcript_partial",

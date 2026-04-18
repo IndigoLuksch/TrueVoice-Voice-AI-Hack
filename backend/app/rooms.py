@@ -8,6 +8,9 @@ from nanoid import generate as nanoid_generate
 from app.eventbus import EventBus
 
 _ID_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789"
+# Short numeric codes for human-shared room links (10^4 possibilities).
+_ROOM_CODE_ALPHABET = "0123456789"
+_ROOM_CODE_LEN = 4
 
 
 @dataclass
@@ -42,7 +45,7 @@ class RoomManager:
         self._rooms: dict[str, Room] = {}
 
     def create(self) -> Room:
-        room_id = nanoid_generate(_ID_ALPHABET, 8)
+        room_id = nanoid_generate(_ROOM_CODE_ALPHABET, _ROOM_CODE_LEN)
         room = Room(
             room_id=room_id,
             created_at_ms=int(time.time() * 1000),
