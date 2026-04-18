@@ -1,0 +1,51 @@
+import logging
+
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.api.rooms import router as rooms_router
+from app.config import log_key_presence, settings
+
+logger = logging.getLogger("truevoice")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+
+app = FastAPI(title="TrueVoice backend")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.allowed_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(rooms_router)
+
+
+@app.on_event("startup")
+def _log_startup() -> None:
+    logger.info("TrueVoice backend starting")
+    logger.info("Allowed origins: %s", settings.allowed_origins)
+    for name, masked in log_key_presence(settings).items():
+        logger.info("%s loaded: %s", name, masked)
+
+
+@app.get("/health")
+def health() -> dict:
+    return {"ok": True}
+
+
+@app.websocket("/ws/echo")
+async def ws_echo(ws: WebSocket) -> None:
+    await ws.accept()
+    try:
+        while True:
+            msg = await ws.receive()
+            if msg["type"] == "websocket.disconnect":
+                return
+            if "text" in msg and msg["text"] is not None:
+                await ws.send_text(msg["text"])
+            elif "bytes" in msg and msg["bytes"] is not None:
+                await ws.send_bytes(msg["bytes"])
+    except WebSocketDisconnect:
+        return
