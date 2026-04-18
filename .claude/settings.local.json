@@ -15,7 +15,16 @@
       "Bash(cmd *)",
       "Read(//c/Users/Oriol/.local/bin//**)",
       "Read(//c/Program Files/**)",
-      "Bash(pip show *)"
+      "Bash(pip show *)",
+      "Bash",
+      "Read",
+      "Edit",
+      "Write",
+      "WebFetch",
+      "Grep",
+      "Glob",
+      "NotebookEdit",
+      "WebSearch"
     ]
   }
 }
