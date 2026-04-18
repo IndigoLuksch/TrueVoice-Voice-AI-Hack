@@ -1,0 +1,9 @@
+# secrets — never commit real keys (defence-in-depth; backend/.gitignore also covers these)
+backend/.env
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+service-account*.json

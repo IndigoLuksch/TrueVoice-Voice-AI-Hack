@@ -7,15 +7,15 @@
       "Bash(git reset *)",
       "Bash(git rm *)",
       "Skill(update-config)",
-      "Bash",
-      "Read",
-      "Edit",
-      "Write",
-      "WebFetch",
-      "Grep",
-      "Glob",
-      "NotebookEdit",
-      "WebSearch"
+      "Bash(uv --version)",
+      "Bash(powershell *)",
+      "Bash(cmd //c \"where uv 2>nul\")",
+      "Bash(cmd //c \"uv --version 2>nul\")",
+      "Bash(uv sync *)",
+      "Bash(cmd *)",
+      "Read(//c/Users/Oriol/.local/bin//**)",
+      "Read(//c/Program Files/**)",
+      "Bash(pip show *)"
     ]
   }
 }
