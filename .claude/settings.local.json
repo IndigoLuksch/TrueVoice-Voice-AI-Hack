@@ -38,7 +38,9 @@
       "Bash(npx --version)",
       "Bash(npx --yes -p @mermaid-js/mermaid-cli mmdc -i pipeline.mmd -o pipeline.png -c mermaid-config.json -b \"#0b1220\" -w 2400 -H 1500 --scale 2)",
       "Bash(npx --yes -p @mermaid-js/mermaid-cli mmdc -i pipeline.mmd -o pipeline.svg -c mermaid-config.json -b \"#0b1220\")",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(curl *)"
     ]
   }
 }
