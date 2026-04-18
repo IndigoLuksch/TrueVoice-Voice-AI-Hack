@@ -16,15 +16,7 @@
       "Read(//c/Users/Oriol/.local/bin//**)",
       "Read(//c/Program Files/**)",
       "Bash(pip show *)",
-      "Bash",
-      "Read",
-      "Edit",
-      "Write",
-      "WebFetch",
-      "Grep",
-      "Glob",
-      "NotebookEdit",
-      "WebSearch"
+      "Bash(export PATH=\"$HOME/.local/bin:$PATH\")"
     ]
   }
 }
