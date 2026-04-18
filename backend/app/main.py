@@ -10,6 +10,7 @@ from app.config import log_key_presence, settings
 from app.test_page import router as test_page_router
 from app.ws.audio import router as audio_router
 from app.ws.dashboard import router as dashboard_router
+from app.ws.signaling import router as signaling_router
 
 logger = logging.getLogger("truevoice")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
@@ -27,6 +28,7 @@ app.add_middleware(
 app.include_router(rooms_router)
 app.include_router(audio_router)
 app.include_router(dashboard_router)
+app.include_router(signaling_router)
 app.include_router(report_router)
 app.include_router(test_page_router)
 

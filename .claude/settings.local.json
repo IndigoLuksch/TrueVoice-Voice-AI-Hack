@@ -50,7 +50,10 @@
       "Bash(pnpm dev *)",
       "Bash(netstat -ano)",
       "Bash(taskkill *)",
-      "Bash(tasklist //FI \"IMAGENAME eq python.exe\")"
+      "Bash(tasklist //FI \"IMAGENAME eq python.exe\")",
+      "Bash(python -c \"from app.main import app; print\\('OK', [r.path for r in app.routes if 'signal' in r.path]\\)\")",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(wait)"
     ]
   }
 }

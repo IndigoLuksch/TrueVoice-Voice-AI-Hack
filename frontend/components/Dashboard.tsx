@@ -20,6 +20,13 @@ type Props = {
   startedAtMs?: number | null;
   localStream?: MediaStream | null;
   onEndConsultation: () => void;
+  /**
+   * Optional slot rendered at the top of the right rail (above the flag stack).
+   * Used by telehealth to show the peer video tile + controls.
+   */
+  topRightSlot?: React.ReactNode;
+  /** Extra status pips rendered in the header next to Mic/STT/Biomarkers. */
+  headerStatusSlot?: React.ReactNode;
 };
 
 function useNow(intervalMs = 1000) {
@@ -67,6 +74,8 @@ export default function Dashboard({
   startedAtMs,
   localStream,
   onEndConsultation,
+  topRightSlot,
+  headerStatusSlot,
 }: Props) {
   const now = useNow(1000);
 
@@ -189,6 +198,7 @@ export default function Dashboard({
               <StatusPip label="Mic" active={!!localStream} />
               <StatusPip label="STT" active={sttActive} tone={sttActive ? "emerald" : "amber"} />
               <StatusPip label="Biomarkers" active={bmActive} tone={bmActive ? "emerald" : "amber"} />
+              {headerStatusSlot}
             </div>
             <div className="hidden md:flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3 py-1">
               <span className="relative flex h-1.5 w-1.5">
@@ -256,48 +266,55 @@ export default function Dashboard({
           <TranscriptLane events={events} />
         </section>
 
-        {/* RIGHT RAIL — flag stack */}
-        <aside className="bg-neutral-50/50 overflow-y-auto">
-          <header className="sticky top-0 z-10 bg-neutral-50/90 backdrop-blur-sm border-b border-neutral-100 px-5 py-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-[10px] font-bold tracking-[0.25em] uppercase text-orange-500">
-                  · Concordance gaps
-                </div>
-                <div className="mt-1 font-['Space_Grotesk'] text-xl font-bold tracking-tight">
-                  {flags.length === 0 ? (
-                    <span className="text-neutral-400">Aligned</span>
-                  ) : (
-                    <span className="tabular-nums">
-                      {flags.length}{" "}
-                      <span className="text-neutral-400 text-base font-medium">
-                        gap{flags.length === 1 ? "" : "s"}
-                      </span>
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className="text-[9px] font-mono text-neutral-400 uppercase tracking-[0.2em] text-right leading-tight">
-                claude
-                <br />
-                haiku 4.5
-              </div>
+        {/* RIGHT RAIL — optional video panel + flag stack */}
+        <aside className="bg-neutral-50/50 flex flex-col min-h-0">
+          {topRightSlot && (
+            <div className="flex-none border-b border-neutral-100 bg-white">
+              {topRightSlot}
             </div>
-          </header>
+          )}
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            <header className="sticky top-0 z-10 bg-neutral-50/90 backdrop-blur-sm border-b border-neutral-100 px-5 py-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-[10px] font-bold tracking-[0.25em] uppercase text-orange-500">
+                    · Concordance gaps
+                  </div>
+                  <div className="mt-1 font-['Space_Grotesk'] text-xl font-bold tracking-tight">
+                    {flags.length === 0 ? (
+                      <span className="text-neutral-400">Aligned</span>
+                    ) : (
+                      <span className="tabular-nums">
+                        {flags.length}{" "}
+                        <span className="text-neutral-400 text-base font-medium">
+                          gap{flags.length === 1 ? "" : "s"}
+                        </span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="text-[9px] font-mono text-neutral-400 uppercase tracking-[0.2em] text-right leading-tight">
+                  claude
+                  <br />
+                  haiku 4.5
+                </div>
+              </div>
+            </header>
 
-          <div className="p-4 flex flex-col gap-4">
-            {flags.length === 0 ? (
-              <EmptyFlagState />
-            ) : (
-              flags.map((f, i) => (
-                <FlagCard
-                  key={f.flag_id}
-                  flag={f}
-                  fresh={i === 0}
-                  index={flags.length - 1 - i}
-                />
-              ))
-            )}
+            <div className="p-4 flex flex-col gap-4">
+              {flags.length === 0 ? (
+                <EmptyFlagState />
+              ) : (
+                flags.map((f, i) => (
+                  <FlagCard
+                    key={f.flag_id}
+                    flag={f}
+                    fresh={i === 0}
+                    index={flags.length - 1 - i}
+                  />
+                ))
+              )}
+            </div>
           </div>
         </aside>
       </main>

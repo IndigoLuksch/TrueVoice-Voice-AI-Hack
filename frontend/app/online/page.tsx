@@ -57,8 +57,10 @@ export default function OnlineLobbyPage() {
           Start or join a session
         </h1>
         <p className="mt-5 text-base md:text-lg text-neutral-400 leading-relaxed">
-          Create a new room and open the patient link on one device and the clinician
-          dashboard on another. Both sides need microphone access for live transcription.
+          Create a new room, share the 4-digit code, and meet the patient on a
+          live video call. The clinician sees the live dashboard with transcript,
+          biomarkers, and concordance gaps. Both sides need microphone and
+          camera access.
         </p>
 
         <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
