@@ -55,7 +55,10 @@
       "Bash(echo \"EXIT=$?\")",
       "Bash(wait)",
       "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('keys:', list\\(d.keys\\(\\)\\)\\); print\\('transcripts count:', len\\(d.get\\('transcripts',[]\\)\\)\\); print\\('biomarker events:', len\\(d.get\\('biomarker_history',[]\\)\\)\\); print\\('flags:', len\\(d.get\\('flags',[]\\)\\)\\); print\\('duration_sec:', d.get\\('duration_sec'\\)\\)\")",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "Bash(cp \"C:/Users/Oriol/OneDrive/Imatges/Capturas de pantalla/Screenshot 2026-04-18 172032.png\" \"C:/Users/Oriol/OneDrive/Escritorio/repos/TrueVoice-Voice-AI-Hack/docs/images/landing.png\")",
+      "Bash(cp \"C:/Users/Oriol/OneDrive/Imatges/Capturas de pantalla/Screenshot 2026-04-18 174835.png\" \"C:/Users/Oriol/OneDrive/Escritorio/repos/TrueVoice-Voice-AI-Hack/docs/images/dashboard.png\")",
+      "Bash(cp \"C:/Users/Oriol/OneDrive/Imatges/Capturas de pantalla/Screenshot 2026-04-18 174853.png\" \"C:/Users/Oriol/OneDrive/Escritorio/repos/TrueVoice-Voice-AI-Hack/docs/images/report.png\")"
     ]
   }
 }

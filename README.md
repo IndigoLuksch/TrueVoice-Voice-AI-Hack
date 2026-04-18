@@ -92,19 +92,19 @@ graph TD
 
 ### Landing page
 
-Landing page showing the two consultation modes and the TrueVoice value proposition
+![Landing page showing the two consultation modes and the TrueVoice value proposition](docs/images/landing.png)
 
 ### Clinician dashboard
 
-*Live transcript lane, Helios/Apollo/Psyche biomarker bars, and concordance flag cards — each flag pairs the minimisation phrase with the biomarker evidence that triggered it and Claude's gloss.*
+*Live transcript lane, Helios/Apollo/Psyche biomarker bars, and concordance flag cards. Each flag pairs the minimisation phrase with the biomarker evidence that triggered it and Claude's gloss.*
 
-Clinician dashboard — placeholder, screenshot to be added
+![Clinician dashboard with live transcript, concordance meter, biomarker bars, and flag cards](docs/images/dashboard.png)
 
 ### Evidence report
 
 *Clicking **Generate Report** at the end of the consult calls Claude Sonnet 4.6 with the full transcript, every biomarker reading, and every flag. The output is a structured one-page brief the GP can review and attach to the patient record.*
 
-Evidence report — placeholder, screenshot to be added
+![Evidence report listing concordance gaps with quoted utterances and biomarker evidence](docs/images/report.png)
 
 ---
 
