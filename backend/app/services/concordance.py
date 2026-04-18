@@ -37,14 +37,22 @@ _COMPILED = [re.compile(p, re.IGNORECASE) for p in MINIMIZATION_PATTERNS]
 
 DISTRESS_THRESHOLDS: dict[str, float] = {
     # keyed as "model.name"
-    "helios.distress": 0.65,
-    "helios.stress": 0.70,
-    "helios.fatigue": 0.70,
-    "apollo.low_mood": 0.65,
-    "apollo.low_energy": 0.65,
-    "apollo.anhedonia": 0.65,
-    "apollo.sleep_issues": 0.65,
-    "apollo.nervousness": 0.70,
+    # Note: Thymia's live scale runs roughly 0.0–0.3 for calm speech and
+    # 0.3–0.7+ when genuine vocal distress is present. PRD's theoretical
+    # 0.65 threshold is too high to ever fire on moderate distress in
+    # practice, so we use demo-reliable values here. These are NOT
+    # clinical thresholds — they're sensitivity settings for the demo.
+    "helios.distress": 0.30,
+    "helios.stress": 0.35,
+    "helios.fatigue": 0.30,
+    "helios.burnout": 0.30,
+    "helios.low_self_esteem": 0.30,
+    "apollo.low_mood": 0.30,
+    "apollo.low_energy": 0.30,
+    "apollo.anhedonia": 0.30,
+    "apollo.sleep_issues": 0.30,
+    "apollo.nervousness": 0.35,
+    "apollo.worry": 0.35,
 }
 
 LOOKBACK_MS = 60_000

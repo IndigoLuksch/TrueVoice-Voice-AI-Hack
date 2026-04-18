@@ -215,10 +215,75 @@ class ThymiaService:
                         if self._publish_biomarker(room, model_name, e):
                             handled = True
 
+        # Shape C: `biomarker_summary` is a flat dict of metric -> value, mixing
+        # Helios metrics, Apollo metrics (when active), and Psyche affect keys.
+        # This is what the live Thymia wellbeing-awareness policy emits.
+        biomarker_summary = result.get("biomarker_summary")
+        if isinstance(biomarker_summary, dict):
+            if self._emit_from_summary(room, biomarker_summary):
+                handled = True
+
         if not handled:
             logger.warning(
                 "[thymia] unrecognized policy result shape (payload=%r)", payload
             )
+
+    # Known biomarker-metric name sets (lowercase).
+    _HELIOS_KEYS = frozenset({
+        "distress", "stress", "fatigue", "burnout", "low_self_esteem",
+    })
+    _APOLLO_KEYS = frozenset({
+        "low_mood", "anhedonia", "nervousness", "sleep_issues",
+        "low_energy", "worry", "depression_probability", "anxiety_probability",
+    })
+    _PSYCHE_KEYS = frozenset({
+        "neutral", "happy", "sad", "angry",
+        "fearful", "disgusted", "surprised",
+    })
+
+    def _emit_from_summary(self, room, summary: dict) -> bool:
+        """Split a flat `biomarker_summary` dict into typed events.
+
+        Returns True if at least one event was published.
+        """
+        emitted = False
+        affect: dict[str, float] = {}
+        ts_ms = room.now_ms()
+
+        for raw_key, raw_val in summary.items():
+            key = str(raw_key).lower()
+            # Skip descriptive / unknown keys.
+            if key in {"interpretation", "<unk>", "critical_symptoms"}:
+                continue
+            # Accept numeric scalars only (skip lists / nested).
+            try:
+                value = float(raw_val)
+            except (TypeError, ValueError):
+                continue
+
+            if key in self._PSYCHE_KEYS:
+                affect[key] = value
+            elif key in self._HELIOS_KEYS:
+                if self._publish_biomarker(
+                    room, "helios", {"name": key, "value": value}
+                ):
+                    emitted = True
+            elif key in self._APOLLO_KEYS:
+                if self._publish_biomarker(
+                    room, "apollo", {"name": key, "value": value}
+                ):
+                    emitted = True
+            # else: unknown metric — ignore silently (could be a new metric)
+
+        if affect:
+            room.eventbus.publish({
+                "type": "psyche_update",
+                "affect": affect,
+                "ts_ms": ts_ms,
+            })
+            emitted = True
+
+        return emitted
 
     def _publish_biomarker(self, room, model_name: str, entry: dict) -> bool:
         """Publish one biomarker entry. Returns True if something was emitted."""
