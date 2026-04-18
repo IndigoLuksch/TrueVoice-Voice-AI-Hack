@@ -80,10 +80,14 @@ export function useVideoCall({ roomId, role, localStream, enabled }: Opts): Vide
 
     destroyedRef.current = false;
 
+    const tag = `[call:${role}]`;
     const sendSignal = (msg: SignalMsg) => {
       const ws = wsRef.current;
       if (ws && ws.readyState === WebSocket.OPEN) {
+        console.log(tag, "ws send", msg.type);
         ws.send(JSON.stringify(msg));
+      } else {
+        console.warn(tag, "ws send DROPPED (not open)", msg.type, "state=", ws?.readyState);
       }
     };
 
@@ -107,21 +111,28 @@ export function useVideoCall({ roomId, role, localStream, enabled }: Opts): Vide
 
     const createAndSendOffer = async () => {
       const pc = pcRef.current;
-      if (!pc) return;
-      if (pc.signalingState !== "stable" && pc.signalingState !== "have-local-offer") return;
+      if (!pc) { console.warn(tag, "createAndSendOffer: no pc"); return; }
+      if (pc.signalingState !== "stable" && pc.signalingState !== "have-local-offer") {
+        console.warn(tag, "createAndSendOffer: bad state", pc.signalingState);
+        return;
+      }
       try {
+        console.log(tag, "createOffer…");
         const offer = await pc.createOffer();
+        console.log(tag, "setLocalDescription(offer)");
         await pc.setLocalDescription(offer);
         if (pc.localDescription) {
           sendSignal({ type: "offer", sdp: pc.localDescription.toJSON() });
         }
       } catch (e) {
+        console.error(tag, "offer failed", e);
         setState((s) => ({ ...s, error: `offer failed: ${String(e)}` }));
       }
     };
 
     const buildPeerConnection = () => {
       const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+      console.log(tag, "new RTCPeerConnection", { iceServers: ICE_SERVERS });
       pcRef.current = pc;
       remoteDescSet.current = false;
       pendingCandidates.current = [];
@@ -131,6 +142,7 @@ export function useVideoCall({ roomId, role, localStream, enabled }: Opts): Vide
       setState((s) => ({ ...s, remoteStream: remote, peerConnected: false }));
 
       pc.ontrack = (e) => {
+        console.log(tag, "ontrack", e.track.kind, "streams=", e.streams.length);
         const stream = remoteStreamRef.current;
         if (!stream) return;
         // Prefer the peer-provided stream so track removals propagate.
@@ -150,16 +162,32 @@ export function useVideoCall({ roomId, role, localStream, enabled }: Opts): Vide
 
       pc.onicecandidate = (e) => {
         if (e.candidate) {
-          sendSignal({ type: "ice", candidate: e.candidate.toJSON() });
+          const c = e.candidate;
+          console.log(tag, "local candidate", c.type, c.protocol, c.address ?? c.candidate);
+          sendSignal({ type: "ice", candidate: c.toJSON() });
+        } else {
+          console.log(tag, "ICE gathering complete (null candidate)");
         }
+      };
+
+      pc.oniceconnectionstatechange = () => {
+        console.log(tag, "iceConnectionState=", pc.iceConnectionState);
+      };
+      pc.onicegatheringstatechange = () => {
+        console.log(tag, "iceGatheringState=", pc.iceGatheringState);
+      };
+      pc.onsignalingstatechange = () => {
+        console.log(tag, "signalingState=", pc.signalingState);
       };
 
       pc.onconnectionstatechange = () => {
         const cs = pc.connectionState;
+        console.log(tag, "connectionState=", cs);
         setState((s) => ({ ...s, peerConnected: cs === "connected" }));
         if (cs === "failed") {
           // ICE failure: try an ICE restart if we're the impolite side.
           if (!polite && peerPresentRef.current) {
+            console.warn(tag, "connection FAILED, restarting ICE");
             pc.restartIce();
             createAndSendOffer();
           }
@@ -188,10 +216,12 @@ export function useVideoCall({ roomId, role, localStream, enabled }: Opts): Vide
       wsRef.current = ws;
 
       ws.onopen = () => {
+        console.log(tag, "signaling WS open");
         setState((s) => ({ ...s, signalingConnected: true, error: null }));
       };
 
       ws.onclose = (ev) => {
+        console.warn(tag, "signaling WS close", ev.code, ev.reason);
         setState((s) => ({ ...s, signalingConnected: false, peerPresent: false }));
         peerPresentRef.current = false;
         // Server kicked us because another tab took over this role — don't
@@ -216,8 +246,9 @@ export function useVideoCall({ roomId, role, localStream, enabled }: Opts): Vide
         } catch {
           return;
         }
+        console.log(tag, "ws recv", msg.type, (msg as { peer?: string }).peer ?? "");
         const pc = pcRef.current;
-        if (!pc) return;
+        if (!pc) { console.warn(tag, "ws recv but no pc"); return; }
 
         switch (msg.type) {
           case "ready":
@@ -243,18 +274,22 @@ export function useVideoCall({ roomId, role, localStream, enabled }: Opts): Vide
 
           case "offer": {
             try {
+              console.log(tag, "setRemoteDescription(offer)");
               await pc.setRemoteDescription(msg.sdp);
               remoteDescSet.current = true;
               for (const c of pendingCandidates.current) {
-                try { await pc.addIceCandidate(c); } catch {}
+                try { await pc.addIceCandidate(c); } catch (e) { console.warn(tag, "queued ice failed", e); }
               }
+              console.log(tag, "drained", pendingCandidates.current.length, "queued ice");
               pendingCandidates.current = [];
               const answer = await pc.createAnswer();
+              console.log(tag, "setLocalDescription(answer)");
               await pc.setLocalDescription(answer);
               if (pc.localDescription) {
                 sendSignal({ type: "answer", sdp: pc.localDescription.toJSON() });
               }
             } catch (e) {
+              console.error(tag, "offer handle failed", e);
               setState((s) => ({ ...s, error: `offer handle failed: ${String(e)}` }));
             }
             break;
@@ -263,14 +298,18 @@ export function useVideoCall({ roomId, role, localStream, enabled }: Opts): Vide
           case "answer": {
             try {
               if (pc.signalingState === "have-local-offer") {
+                console.log(tag, "setRemoteDescription(answer)");
                 await pc.setRemoteDescription(msg.sdp);
                 remoteDescSet.current = true;
                 for (const c of pendingCandidates.current) {
-                  try { await pc.addIceCandidate(c); } catch {}
+                  try { await pc.addIceCandidate(c); } catch (e) { console.warn(tag, "queued ice failed", e); }
                 }
                 pendingCandidates.current = [];
+              } else {
+                console.warn(tag, "answer but signalingState=", pc.signalingState);
               }
             } catch (e) {
+              console.error(tag, "answer handle failed", e);
               setState((s) => ({ ...s, error: `answer handle failed: ${String(e)}` }));
             }
             break;
@@ -278,9 +317,11 @@ export function useVideoCall({ roomId, role, localStream, enabled }: Opts): Vide
 
           case "ice": {
             if (remoteDescSet.current) {
-              try { await pc.addIceCandidate(msg.candidate); } catch {}
+              try { await pc.addIceCandidate(msg.candidate); }
+              catch (e) { console.warn(tag, "addIceCandidate failed", e); }
             } else {
               pendingCandidates.current.push(msg.candidate);
+              console.log(tag, "ice queued (no remote desc yet), total=", pendingCandidates.current.length);
             }
             break;
           }
