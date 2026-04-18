@@ -35,6 +35,9 @@ packages = ["app"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+markers = [
+    "integration: live-server integration tests (spawn real uvicorn; slower)",
+]
 
 [tool.ruff]
 line-length = 100
