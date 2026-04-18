@@ -100,6 +100,12 @@ graph TD
 
 ![Clinician dashboard with live transcript, concordance meter, biomarker bars, and flag cards](docs/images/dashboard.png)
 
+### Telehealth call (GP view)
+
+*The clinician's screen during a live telehealth consult. WebRTC video sits alongside the full diagnostic surface: patient tile, live diarized transcript, concordance meter, biomarker bars, and the gap panel waiting to fire when minimisation meets biomarker evidence.*
+
+![Clinician telehealth view with patient video tile, live transcript, and diagnostic dashboard side by side](docs/images/telehealth.png)
+
 ### Evidence report
 
 *Clicking **Generate Report** at the end of the consult calls Claude Sonnet 4.6 with the full transcript, every biomarker reading, and every flag. The output is a structured one-page brief the GP can review and attach to the patient record.*
