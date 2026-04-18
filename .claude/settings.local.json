@@ -16,7 +16,8 @@
       "Read(//c/Users/Oriol/.local/bin//**)",
       "Read(//c/Program Files/**)",
       "Bash(pip show *)",
-      "Bash(export PATH=\"$HOME/.local/bin:$PATH\")"
+      "Bash(export PATH=\"$HOME/.local/bin:$PATH\")",
+      "Bash(uv run *)"
     ]
   }
 }

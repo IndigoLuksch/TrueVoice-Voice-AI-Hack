@@ -311,8 +311,10 @@ Expected: FAIL with `ImportError` or `ModuleNotFoundError` for `app.config`.
 - [ ] **Step 3: Write `backend/app/config.py`**
 
 ```python
+from typing import Annotated
+
 from pydantic import Field, SecretStr, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -321,7 +323,13 @@ class Settings(BaseSettings):
     speechmatics_api_key: SecretStr
     thymia_api_key: SecretStr
     anthropic_api_key: SecretStr
-    allowed_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
+    # NoDecode tells pydantic-settings to skip its JSON decoder for this
+    # field so the raw env string reaches the field_validator below.
+    # Without it, pydantic-settings >= 2.13 tries to JSON-parse the CSV
+    # and raises SettingsError before the validator runs.
+    allowed_origins: Annotated[list[str], NoDecode] = Field(
+        default_factory=lambda: ["http://localhost:3000"]
+    )
 
     @field_validator("allowed_origins", mode="before")
     @classmethod
