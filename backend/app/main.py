@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.rooms import router as rooms_router
 from app.config import log_key_presence, settings
+from app.ws.audio import router as audio_router
 
 logger = logging.getLogger("truevoice")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
@@ -20,6 +21,7 @@ app.add_middleware(
 )
 
 app.include_router(rooms_router)
+app.include_router(audio_router)
 
 
 @app.on_event("startup")
