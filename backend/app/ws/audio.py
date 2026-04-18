@@ -22,6 +22,7 @@ router = APIRouter()
 @router.websocket("/ws/audio/{role}/{room_id}")
 async def audio_ingress(ws: WebSocket, role: str, room_id: str, mode: str = "") -> None:
     await ws.accept()
+    logger.info("[audio] incoming ws role=%s room=%s mode=%r", role, room_id, mode)
 
     if role not in _VALID_ROLES:
         await ws.close(code=4404, reason=f"invalid role: {role}")

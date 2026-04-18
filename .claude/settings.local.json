@@ -48,7 +48,9 @@
       "Bash(npx next *)",
       "Bash(npx tsc *)",
       "Bash(pnpm dev *)",
-      "Bash(netstat -ano)"
+      "Bash(netstat -ano)",
+      "Bash(taskkill *)",
+      "Bash(tasklist //FI \"IMAGENAME eq python.exe\")"
     ]
   }
 }

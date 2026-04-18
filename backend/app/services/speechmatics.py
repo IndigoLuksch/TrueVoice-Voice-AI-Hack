@@ -87,6 +87,10 @@ def _default_client_factory(api_key: str):
     return _RealClient()
 
 
+_DEBUG_FIRST_N = 3
+_debug_seen = 0
+
+
 def _extract_segments(message) -> list[tuple[str | None, str]]:
     """Return [(speaker_label_or_None, text), ...] grouped by speaker runs.
 
@@ -96,10 +100,30 @@ def _extract_segments(message) -> list[tuple[str | None, str]]:
     """
     from speechmatics.rt import TranscriptResult
 
+    global _debug_seen
     try:
         result = TranscriptResult.from_message(message)
     except Exception:
         return []
+
+    # Dump raw structure of first few finals so we can see whether
+    # Speechmatics is attaching speaker labels at all.
+    if _debug_seen < _DEBUG_FIRST_N and result.results:
+        _debug_seen += 1
+        try:
+            speakers_seen = {
+                r.alternatives[0].speaker
+                for r in result.results
+                if r.alternatives
+            }
+            logger.info(
+                "[sm-debug] msg %d: speakers=%s text=%r",
+                _debug_seen,
+                speakers_seen,
+                (result.metadata.transcript if result.metadata else "")[:100],
+            )
+        except Exception:
+            logger.exception("[sm-debug] inspect failed")
 
     if not result.results:
         text = (result.metadata.transcript if result.metadata else "").strip()
