@@ -1,14 +1,5 @@
 # TrueVoice
 
-Python
-FastAPI
-Next.js
-Claude
-Speechmatics
-Thymia
-Track
-Hackathon
-
 **Clinical voice intelligence that listens for what patients don't say.**
 
 Built at the [Voice AI Hack](https://lu.ma/voiceaihack) (London, 2026) — **Voice & Medical** track, sponsored by Thymia and Speechmatics.
