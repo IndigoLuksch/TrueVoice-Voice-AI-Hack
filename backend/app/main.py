@@ -7,6 +7,7 @@ from app.api import debug as debug_api
 from app.api.report import router as report_router
 from app.api.rooms import router as rooms_router
 from app.config import log_key_presence, settings
+from app.test_page import router as test_page_router
 from app.ws.audio import router as audio_router
 from app.ws.dashboard import router as dashboard_router
 
@@ -27,6 +28,7 @@ app.include_router(rooms_router)
 app.include_router(audio_router)
 app.include_router(dashboard_router)
 app.include_router(report_router)
+app.include_router(test_page_router)
 
 if debug_api.is_enabled():
     app.include_router(debug_api.router)
