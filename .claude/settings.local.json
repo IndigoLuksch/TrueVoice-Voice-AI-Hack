@@ -17,7 +17,28 @@
       "Read(//c/Program Files/**)",
       "Bash(pip show *)",
       "Bash(export PATH=\"$HOME/.local/bin:$PATH\")",
-      "Bash(uv run *)"
+      "Bash(uv run *)",
+      "Bash(git commit *)",
+      "Bash(curl -s http://127.0.0.1:8000/health)",
+      "Bash(curl -s http://127.0.0.1:8765/healthz)",
+      "Bash(curl -s http://127.0.0.1:8765/health)",
+      "Bash(curl -s -X POST http://127.0.0.1:8765/api/rooms)",
+      "Bash(taskkill //F //IM uvicorn.exe)",
+      "Bash(taskkill //F //IM python.exe)",
+      "Bash(curl -sX POST http://127.0.0.1:8000/api/rooms)",
+      "Bash(curl -s http://127.0.0.1:8000/openapi.json)",
+      "Bash(python -c \"import sys, json; d = json.load\\(sys.stdin\\); print\\('\\\\n'.join\\(sorted\\(d['paths'].keys\\(\\)\\)\\)\\)\")",
+      "Bash(curl -sf http://127.0.0.1:8765/health)",
+      "Bash(curl -sX POST http://127.0.0.1:8765/api/rooms)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://127.0.0.1:8000/test)",
+      "Bash(git fetch *)",
+      "Bash(git pull *)",
+      "Bash(git push *)",
+      "Bash(curl -s -o /dev/null -w \"/test: %{http_code}\\\\n\" http://127.0.0.1:8000/test)",
+      "Bash(npx --version)",
+      "Bash(npx --yes -p @mermaid-js/mermaid-cli mmdc -i pipeline.mmd -o pipeline.png -c mermaid-config.json -b \"#0b1220\" -w 2400 -H 1500 --scale 2)",
+      "Bash(npx --yes -p @mermaid-js/mermaid-cli mmdc -i pipeline.mmd -o pipeline.svg -c mermaid-config.json -b \"#0b1220\")",
+      "Bash(npm install *)"
     ]
   }
 }

@@ -1,0 +1,67 @@
+flowchart LR
+    %% ============ CLIENTS ============
+    subgraph Browser["Browser clients"]
+        direction TB
+        Patient["Patient page<br/>/patient/[room]<br/>(or /inperson)"]
+        Clinician["Clinician dashboard<br/>/clinician/[room]"]
+        Worklet["AudioWorklet<br/>48kHz Float32 → 16kHz PCM16<br/>640-sample / 40ms frames"]
+        WebRTC["WebRTC video<br/>(simple-peer)"]
+        Patient --> Worklet
+        Patient -. shared MediaStream .-> WebRTC
+    end
+
+    %% ============ BACKEND ============
+    subgraph Backend["FastAPI backend (single process, in-memory rooms)"]
+        direction TB
+        Rooms["RoomManager<br/>+ Room.now_ms() clock"]
+        Audio["WS /ws/audio/{role}/{room}<br/>validates 1280-byte frames"]
+        Sig["WS /ws/signaling/{room}<br/>peer relay"]
+        Dist["AudioDistributor<br/>fan-out queues"]
+        SM["SpeechmaticsService<br/>(medical RT, both roles)"]
+        Thy["ThymiaService<br/>(patient audio ONLY)"]
+        Conc["ConcordanceEngine<br/>regex minimization +<br/>biomarker lookback 60s"]
+        ClaudeH["Claude Haiku 4.5<br/>flag gloss"]
+        ClaudeS["Claude Sonnet 4.6<br/>end-of-consult report"]
+        Bus(("EventBus<br/>per-room pub/sub<br/>+ ring buffer"))
+        DashWS["WS /ws/dashboard/{room}"]
+        ReportAPI["POST/GET /api/report/{room}"]
+
+        Audio --> Dist
+        Dist -->|all roles| SM
+        Dist -->|patient only| Thy
+        SM -->|transcript_partial / final| Bus
+        SM -. patient finals .-> Thy
+        Thy -->|biomarker_progress / result / psyche_update| Bus
+        Bus --> Conc
+        Conc -->|evidence| ClaudeH
+        ClaudeH -->|one-line gloss| Conc
+        Conc -->|concordance_flag| Bus
+        Bus --> DashWS
+        Sig -->|call_status| Bus
+        ReportAPI -->|transcripts + biomarkers + flags| ClaudeS
+        ClaudeS -->|markdown report| ReportAPI
+        Rooms -.holds.- Bus
+    end
+
+    %% ============ EXTERNAL ============
+    subgraph External["External APIs"]
+        SMApi[(Speechmatics RT<br/>medical, enhanced)]
+        ThyApi[(Thymia Sentinel<br/>helios / apollo / psyche)]
+        Anthropic[(Anthropic API)]
+    end
+
+    %% Cross-boundary edges
+    Worklet -- "binary PCM16 frames<br/>WebSocket" --> Audio
+    WebRTC <-- "offer/answer/ICE" --> Sig
+    SM <--> SMApi
+    Thy <--> ThyApi
+    ClaudeH <--> Anthropic
+    ClaudeS <--> Anthropic
+    DashWS -- "DashboardEvent JSON stream" --> Clinician
+    Clinician -- "End consult" --> ReportAPI
+    ReportAPI -- "report markdown" --> Clinician
+
+    classDef ext fill:#1e293b,stroke:#94a3b8,color:#fff
+    classDef bus fill:#7c3aed,stroke:#c4b5fd,color:#fff
+    class SMApi,ThyApi,Anthropic ext
+    class Bus bus
