@@ -37,6 +37,7 @@ def live_server():
     env.setdefault("SPEECHMATICS_API_KEY", "integration-sm")
     env.setdefault("THYMIA_API_KEY", "integration-th")
     env.setdefault("ANTHROPIC_API_KEY", "integration-an")
+    env.setdefault("TRUEVOICE_TEST_MODE", "1")
     proc = subprocess.Popen(
         [sys.executable, "-m", "uvicorn", "app.main:app",
          "--host", "127.0.0.1", "--port", str(port), "--log-level", "warning"],

@@ -3,9 +3,11 @@ import logging
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api import debug as debug_api
 from app.api.rooms import router as rooms_router
 from app.config import log_key_presence, settings
 from app.ws.audio import router as audio_router
+from app.ws.dashboard import router as dashboard_router
 
 logger = logging.getLogger("truevoice")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
@@ -22,6 +24,11 @@ app.add_middleware(
 
 app.include_router(rooms_router)
 app.include_router(audio_router)
+app.include_router(dashboard_router)
+
+if debug_api.is_enabled():
+    app.include_router(debug_api.router)
+    logger.warning("DEBUG ROUTES ENABLED — do not expose to the internet")
 
 
 @app.on_event("startup")
