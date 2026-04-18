@@ -71,13 +71,27 @@ class ThymiaService:
         try:
             await client.connect()
             logger.info("[thymia] %s connected", room.room_id)
+            consecutive_failures = 0
             try:
                 while True:
                     chunk = await audio_queue.get()
                     try:
                         await client.send_user_audio(chunk)
+                        consecutive_failures = 0
                     except Exception as e:
-                        logger.warning("[thymia] send_user_audio failed: %s", e)
+                        consecutive_failures += 1
+                        if consecutive_failures <= 3:
+                            logger.warning(
+                                "[thymia] send_user_audio failed (%d): %s",
+                                consecutive_failures, e,
+                            )
+                        if consecutive_failures >= 3:
+                            logger.error(
+                                "[thymia] %s: connection lost, tearing down; "
+                                "next patient audio reconnect will respawn",
+                                room.room_id,
+                            )
+                            return
             except asyncio.CancelledError:
                 logger.info("[thymia] %s cancelled", room.room_id)
                 raise
