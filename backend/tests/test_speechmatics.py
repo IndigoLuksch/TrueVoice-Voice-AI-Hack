@@ -80,7 +80,7 @@ async def test_publishes_partial_transcript_event():
     fake_client = _FakeSMClient()
     svc = SpeechmaticsService(
         client_factory=lambda api_key: fake_client,
-        transcript_extractor=lambda msg: msg,  # pass-through for test
+        segment_extractor=lambda msg: [(None, msg)],  # pass-through for test
     )
     q = room.eventbus.subscribe()
 

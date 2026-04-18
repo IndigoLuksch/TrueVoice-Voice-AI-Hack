@@ -40,7 +40,15 @@
       "Bash(npx --yes -p @mermaid-js/mermaid-cli mmdc -i pipeline.mmd -o pipeline.svg -c mermaid-config.json -b \"#0b1220\")",
       "Bash(npm install *)",
       "Bash(npm run *)",
-      "Bash(curl *)"
+      "Bash(curl *)",
+      "Bash(npx shadcn@latest init -d -y)",
+      "Bash(npx shadcn@latest add card badge separator -y)",
+      "Bash(npx shadcn@latest add \"https://magicui.design/r/border-beam\" \"https://magicui.design/r/number-ticker\" \"https://magicui.design/r/animated-gradient-text\" \"https://magicui.design/r/marquee\" \"https://magicui.design/r/blur-fade\" \"https://magicui.design/r/shimmer-button\" \"https://magicui.design/r/dot-pattern\" \"https://magicui.design/r/typing-animation\")",
+      "Bash(xargs grep *)",
+      "Bash(npx next *)",
+      "Bash(npx tsc *)",
+      "Bash(pnpm dev *)",
+      "Bash(netstat -ano)"
     ]
   }
 }

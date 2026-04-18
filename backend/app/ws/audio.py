@@ -20,7 +20,7 @@ router = APIRouter()
 
 
 @router.websocket("/ws/audio/{role}/{room_id}")
-async def audio_ingress(ws: WebSocket, role: str, room_id: str) -> None:
+async def audio_ingress(ws: WebSocket, role: str, room_id: str, mode: str = "") -> None:
     await ws.accept()
 
     if role not in _VALID_ROLES:
@@ -36,15 +36,23 @@ async def audio_ingress(ws: WebSocket, role: str, room_id: str) -> None:
         room.audio_distributors[role] = AudioDistributor()
     distributor = room.audio_distributors[role]
 
+    # In-person: single mic captures both voices; enable speaker splitting so
+    # diarization produces separate clinician / patient transcripts.
+    split_speakers = mode == "inperson"
+
     # Spawn a Speechmatics task for this (room, role) if not already running.
     existing = room.speechmatics_tasks.get(role)
     if existing is None or existing.done():
         svc = SpeechmaticsService(
-            api_key=settings.speechmatics_api_key.get_secret_value()
+            api_key=settings.speechmatics_api_key.get_secret_value(),
+            split_speakers=split_speakers,
         )
         task = asyncio.create_task(svc.start(room, role))
         room.speechmatics_tasks[role] = task
-        logger.info("[audio] %s@%s SM task spawned", role, room_id)
+        logger.info(
+            "[audio] %s@%s SM task spawned (split_speakers=%s)",
+            role, room_id, split_speakers,
+        )
 
     # Thymia: patient audio only (biomarker pollution risk from clinician voice).
     if role == "patient":

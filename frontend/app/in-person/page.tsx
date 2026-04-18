@@ -40,7 +40,7 @@ export default function InPersonConsultation() {
       captureRef.current = await startAudioCapture({
         stream,
         role: "patient",
-        wsUrl: `${BACKEND_WS}/ws/audio/patient/${room.room_id}`,
+        wsUrl: `${BACKEND_WS}/ws/audio/patient/${room.room_id}?mode=inperson`,
       });
 
       setStatus("live");

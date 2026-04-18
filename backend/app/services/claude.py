@@ -33,32 +33,30 @@ GLOSS_USER_TEMPLATE = (
 
 
 REPORT_SYSTEM = (
-    "You write concise UK GP consultation summaries that highlight concordance "
-    "between patient self-report and voice biomarker data. You are not a "
-    "diagnostic tool. You flag patterns worth a clinician's attention. Use "
-    "clinical register, neutral language, British English. Never speculate "
-    "beyond the evidence."
+    "You are a clinical concordance analyst. Your ONE job is to surface "
+    "moments where the patient's WORDS and their VOICE BIOMARKERS disagreed — "
+    "the GP already has the transcript, they don't need a summary. "
+    "This is about minimisation and unconscious downplaying (a well-documented "
+    "clinical pattern), never about lying. Be concrete: quote the patient, "
+    "name the biomarker, state the divergence. If there were no gaps, say so "
+    "in one sentence and stop. Use British English, clinical register, no "
+    "hedging filler."
 )
 
 REPORT_USER_TEMPLATE = (
-    "Session duration: {duration_sec} seconds.\n\n"
-    "Patient utterances (role=patient only, abridged):\n"
+    "Session duration: {duration_sec} seconds.\n"
+    "Concordance gaps detected: {n_flags}.\n\n"
+    "Patient utterances:\n"
     "{patient_transcript}\n\n"
-    "Biomarker trajectory (key values over time):\n"
+    "Biomarker readings:\n"
     "{biomarker_summary}\n\n"
-    "Concordance flags raised during session ({n_flags}):\n"
+    "Detected concordance gaps:\n"
     "{flags_detail}\n\n"
-    "Produce a markdown report with these sections exactly:\n\n"
-    "## Summary\n"
-    "(2-3 sentence narrative of the session's key clinical signal)\n\n"
-    "## Flagged concordance moments\n"
-    "(For each flag: timestamp, quoted utterance, biomarker evidence, one-line clinical note)\n\n"
-    "## Biomarker trajectory\n"
-    "(Prose description of how key biomarkers moved across the session)\n\n"
-    "## Suggested follow-up\n"
-    "(Non-diagnostic suggestions: e.g. \"Consider PHQ-9 at next visit\", "
-    "\"Sleep history worth exploring\". Max 4 bullets.)\n\n"
-    "Keep total length <= 400 words. Reference specific timestamps."
+    "Produce a 2-4 sentence clinical summary paragraph. Plain prose, no "
+    "headings, no bullets, no markdown. Describe the DOMINANT pattern of "
+    "divergence (or say the patient was aligned if no gaps). Concrete and "
+    "specific — reference biomarkers and quote fragments. No generic advice, "
+    "no 'consider further assessment' filler. Max 80 words total."
 )
 
 
@@ -93,18 +91,26 @@ def _report_fallback(
     biomarker_history: list[dict],
     flags: list[dict],
 ) -> str:
+    if not flags:
+        return (
+            "Patient self-report and voice biomarkers were broadly aligned "
+            f"across the {duration_sec}-second session. No minimisation "
+            "patterns flagged."
+        )
+    top_marker = None
+    for f in flags:
+        for e in f.get("biomarker_evidence", []):
+            if top_marker is None or e["value"] > top_marker["value"]:
+                top_marker = e
+    marker_phrase = (
+        f"Dominant signal: {top_marker['name']} at {top_marker['value']:.2f}."
+        if top_marker
+        else ""
+    )
     return (
-        "## Summary\n"
-        f"Session ran for {duration_sec} seconds with {len(patient_transcripts)} "
-        f"patient utterances and {len(flags)} concordance flag(s). "
-        "Automated summary unavailable; review raw events.\n\n"
-        "## Flagged concordance moments\n"
-        + ("\n".join(f"- [{f['ts_ms']//1000}s] {f['claude_gloss']}" for f in flags) or "(none)")
-        + "\n\n"
-        "## Biomarker trajectory\n"
-        f"{len(biomarker_history)} biomarker readings recorded.\n\n"
-        "## Suggested follow-up\n"
-        "- Review the raw transcript and biomarker logs in the session record.\n"
+        f"{len(flags)} concordance gap(s) detected: patient reported "
+        f"wellbeing while voice biomarkers indicated elevated distress. "
+        f"{marker_phrase}"
     )
 
 
