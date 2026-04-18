@@ -53,7 +53,7 @@ flowchart LR
 
 ## Landing Page
 
-The landing page explains the three consultation modes and links to the clinical dashboard.
+The landing page explains the two consultation modes and links to the clinical dashboard.
 
 ![Landing page showing the three consultation modes and the TrueVoice value proposition](docs/images/landing.png)
 
@@ -81,11 +81,9 @@ At the end of the consultation, clicking **Generate Report** calls Claude Sonnet
 graph TD
     A[TrueVoice] --> B[Telehealth]
     A --> C[In-person]
-    A --> D[Codec Demo]
 
     B --> B1["Browser WebRTC\npatient + clinician on separate devices"]
     C --> C1["Single laptop mic\nboth people in the room"]
-    D --> D1["Raw PCM vs Opus VOIP\nbiomarker fidelity comparison"]
 ```
 
 ---
@@ -100,19 +98,45 @@ graph TD
 
 ## Getting Started
 
+### API Keys
+
+You need three API keys before running anything:
+
+| Variable | Where to get it |
+|---|---|
+| `SPEECHMATICS_API_KEY` | [speechmatics.com](https://www.speechmatics.com) — sign up, create an API key under *API Access* |
+| `THYMIA_API_KEY` | [thymia.ai](https://www.thymia.ai) — contact for access to the Sentinel SDK |
+| `ANTHROPIC_API_KEY` | [console.anthropic.com](https://console.anthropic.com) — create a key under *API Keys* |
+
 ### Backend
+
+Create `backend/.env`:
+```env
+SPEECHMATICS_API_KEY=your-speechmatics-key
+THYMIA_API_KEY=your-thymia-key
+ANTHROPIC_API_KEY=your-anthropic-key
+ALLOWED_ORIGINS=http://localhost:3000
+```
+
+Then:
 ```bash
 cd backend
 uv sync
-cp .env.example .env   # add SPEECHMATICS_API_KEY, THYMIA_API_KEY, ANTHROPIC_API_KEY
 uv run uvicorn app.main:app --reload
 ```
 
 ### Frontend
+
+Create `frontend/.env.local`:
+```env
+NEXT_PUBLIC_BACKEND_HTTP_URL=http://localhost:8000
+NEXT_PUBLIC_BACKEND_WS_URL=ws://localhost:8000
+```
+
+Then:
 ```bash
 cd frontend
 pnpm install
-cp .env.local.example .env.local   # set NEXT_PUBLIC_API_URL
 pnpm dev
 ```
 
@@ -143,8 +167,7 @@ TrueVoice/
     ├── app/
     │   ├── page.tsx             # Landing
     │   ├── in-person/           # In-person mode
-    │   ├── report/[room]/       # Evidence report
-    │   └── test-ui/             # Codec demo
+    │   └── report/[room]/       # Evidence report
     └── components/
         ├── Dashboard.tsx
         ├── BiomarkerLane.tsx
@@ -160,7 +183,7 @@ TrueVoice/
 |---|---|
 | Joan Torres Gordo | [@joant11](https://github.com/joant11) |
 | Indigo Luksch | [@IndigoLuksch](https://github.com/IndigoLuksch) |
-| Oriol Morros Vilaseca | — |
+| Oriol Morros Vilaseca | [@omorros](https://github.com/omorros) |
 
 ---
 
