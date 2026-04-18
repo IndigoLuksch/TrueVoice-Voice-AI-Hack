@@ -129,11 +129,17 @@ class ThymiaService:
 
         We also accept list-of-dicts and object-with-__dict__ shapes defensively.
         """
-        logger.debug("[thymia] progress raw: %r", payload)
         data = self._to_dict(payload)
         if not data:
             logger.warning("[thymia] unrecognized progress payload shape: %r", payload)
             return
+        try:
+            logger.info(
+                "[thymia] %s progress keys=%s",
+                room.room_id, sorted(data.keys()),
+            )
+        except Exception:
+            pass
 
         biomarkers = data.get("biomarkers")
         if isinstance(biomarkers, dict):
@@ -192,7 +198,6 @@ class ThymiaService:
         and/or `affect`; a flat `scores`/`biomarkers`/`results` list; or
         top-level biomarker keys.
         """
-        logger.debug("[thymia] policy raw: %r", payload)
         data = self._to_dict(payload)
         if not data:
             logger.warning("[thymia] unrecognized policy payload shape: %r", payload)
@@ -204,6 +209,15 @@ class ThymiaService:
             result = data
 
         result = self._to_dict(result) or {}
+
+        # Structured log so we can see what the SDK actually hands us.
+        try:
+            logger.info(
+                "[thymia] %s policy_result top_keys=%s result_keys=%s",
+                room.room_id, sorted(data.keys()), sorted(result.keys()),
+            )
+        except Exception:
+            pass
 
         handled = False
 
@@ -234,12 +248,17 @@ class ThymiaService:
         # This is what the live Thymia wellbeing-awareness policy emits.
         biomarker_summary = result.get("biomarker_summary")
         if isinstance(biomarker_summary, dict):
+            logger.info(
+                "[thymia] %s biomarker_summary keys=%s",
+                room.room_id, sorted(biomarker_summary.keys()),
+            )
             if self._emit_from_summary(room, biomarker_summary):
                 handled = True
 
         if not handled:
             logger.warning(
-                "[thymia] unrecognized policy result shape (payload=%r)", payload
+                "[thymia] %s unhandled policy result; result_repr=%r",
+                room.room_id, result,
             )
 
     # Known biomarker-metric name sets (lowercase).

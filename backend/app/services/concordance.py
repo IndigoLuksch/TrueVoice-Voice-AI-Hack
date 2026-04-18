@@ -57,6 +57,11 @@ DISTRESS_THRESHOLDS: dict[str, float] = {
 
 LOOKBACK_MS = 60_000
 DEDUP_MS = 10_000
+# Speechmatics often emits final transcripts word-by-word (1-2 words per event
+# at max_delay=2s), so phrases like "i'm fine" get split across events and a
+# per-event regex would never match. We match against a rolling concatenation
+# of the last PHRASE_WINDOW_MS of patient speech instead.
+PHRASE_WINDOW_MS = 12_000
 
 
 def _find_match(text: str) -> str | None:
@@ -89,6 +94,9 @@ class ConcordanceEngine:
         self._room = room
         self._claude = claude or ClaudeService()
         self._last_flag_ms_by_phrase: dict[str, int] = {}
+        # Rolling buffer of recent patient transcript fragments. Used to match
+        # minimisation phrases that Speechmatics split across multiple finals.
+        self._recent: list[tuple[int, str]] = []  # (ts_ms, text)
         self._task: asyncio.Task | None = None
 
     def start(self) -> None:
@@ -113,25 +121,43 @@ class ConcordanceEngine:
         finally:
             self._room.eventbus.unsubscribe(queue)
 
+    def _rolling_text(self, now_ms: int) -> str:
+        cutoff = now_ms - PHRASE_WINDOW_MS
+        self._recent = [(t, x) for t, x in self._recent if t >= cutoff]
+        return " ".join(x for _, x in self._recent)
+
     async def _maybe_flag(self, evt: dict) -> None:
-        text = evt.get("text", "")
-        phrase = _find_match(text)
-        if not phrase:
+        fragment = (evt.get("text") or "").strip()
+        if not fragment:
             return
         now = self._room.now_ms()
+        evt_end = evt.get("end_ms", now)
+        self._recent.append((evt_end, fragment))
+        combined = self._rolling_text(evt_end)
+
+        phrase = _find_match(combined)
+        logger.info(
+            "[concordance] %s scan fragment=%r window=%r match=%r",
+            self._room.room_id, fragment, combined, phrase,
+        )
+        if not phrase:
+            return
+
         last = self._last_flag_ms_by_phrase.get(phrase, -10 * DEDUP_MS)
         if now - last < DEDUP_MS:
             return
         self._last_flag_ms_by_phrase[phrase] = now
 
-        breaches = _breaches_in_window(
-            self._room.biomarker_history, evt.get("end_ms", now)
+        breaches = _breaches_in_window(self._room.biomarker_history, evt_end)
+        logger.info(
+            "[concordance] %s matched '%s' biomarkers_in_history=%d breaches=%d",
+            self._room.room_id, phrase, len(self._room.biomarker_history), len(breaches),
         )
         if not breaches:
             return
 
         gloss = await self._claude.gloss_flag(
-            utterance=text,
+            utterance=combined,
             matched_phrase=phrase,
             biomarker_evidence=breaches,
         )
@@ -140,7 +166,7 @@ class ConcordanceEngine:
             "type": "concordance_flag",
             "flag_id": nanoid_generate(_ID_ALPHABET, 10),
             "utterance_id": evt.get("utterance_id", ""),
-            "utterance_text": text,
+            "utterance_text": combined,
             "matched_phrase": phrase,
             "biomarker_evidence": [
                 {"name": b["name"], "value": float(b["value"]), "ts_ms": b["ts_ms"]}
