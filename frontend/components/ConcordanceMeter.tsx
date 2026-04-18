@@ -4,47 +4,31 @@ import React, { useMemo } from "react";
 import { motion } from "motion/react";
 import { NumberTicker } from "@/components/ui/number-ticker";
 import { DashboardEvent } from "@/lib/types";
+import { biomarkerWindowRisk } from "@/lib/concordanceRisk";
 import { cn } from "@/lib/utils";
 
-const THRESHOLDS: Record<string, number> = {
-  "helios.distress": 0.65,
-  "helios.stress": 0.7,
-  "helios.fatigue": 0.7,
-  "apollo.low_mood": 0.65,
-  "apollo.low_energy": 0.65,
-  "apollo.anhedonia": 0.65,
-  "apollo.sleep_issues": 0.65,
-  "apollo.nervousness": 0.7,
-  "apollo.worry": 0.65,
-};
-
-const LOOKBACK_MS = 60_000;
+function eventTimeMs(e: DashboardEvent): number {
+  if ("ts_ms" in e && typeof e.ts_ms === "number") return e.ts_ms;
+  if ("end_ms" in e && typeof e.end_ms === "number") return e.end_ms;
+  return 0;
+}
 
 export default function ConcordanceMeter({ events }: { events: DashboardEvent[] }) {
   const { score, status, color, flagCount, dominant } = useMemo(() => {
-    const latestTs =
-      events.length > 0
-        ? (events[events.length - 1] as { ts_ms?: number }).ts_ms ?? 0
-        : 0;
-    const cutoff = latestTs - LOOKBACK_MS;
-
-    let maxRatio = 0;
-    let dominantName = "";
-    for (const e of events) {
-      if (e.type === "biomarker_result" && e.ts_ms >= cutoff) {
-        const key = `${e.model}.${e.name}`;
-        const thr = THRESHOLDS[key];
-        if (thr !== undefined) {
-          const r = e.value / thr;
-          if (r > maxRatio) {
-            maxRatio = r;
-            dominantName = e.name;
-          }
-        }
-      }
-    }
+    const sessionEnd = events.length ? Math.max(...events.map(eventTimeMs)) : 0;
+    const biomarkers = events
+      .filter((e): e is Extract<DashboardEvent, { type: "biomarker_result" }> => e.type === "biomarker_result")
+      .map((e) => ({
+        model: e.model,
+        name: e.name,
+        value: e.value,
+        ts_ms: e.ts_ms,
+      }));
+    const { score: s, maxRatio, dominantName } = biomarkerWindowRisk(
+      biomarkers,
+      sessionEnd || undefined,
+    );
     const flags = events.filter((e) => e.type === "concordance_flag").length;
-    const s = Math.min(100, Math.round(maxRatio * 70));
     let color: "emerald" | "amber" | "red" = "emerald";
     let status = "Aligned";
     if (maxRatio > 1.3) {

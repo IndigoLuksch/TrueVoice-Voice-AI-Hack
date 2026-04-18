@@ -1,13 +1,13 @@
 # TrueVoice
 
-![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-async-009688?logo=fastapi&logoColor=white)
-![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js&logoColor=white)
-![Claude](https://img.shields.io/badge/Claude-Haiku%204.5%20%2F%20Sonnet%204.6-D97706?logo=anthropic&logoColor=white)
-![Speechmatics](https://img.shields.io/badge/Speechmatics-Medical%20STT-2563EB)
-![Thymia](https://img.shields.io/badge/Thymia-Voice%20Biomarkers-7C3AED)
-![Track](https://img.shields.io/badge/Track-Voice%20%26%20Medical-6366F1)
-![Hackathon](https://img.shields.io/badge/Voice%20AI%20Hack-London%202026-EC4899)
+Python
+FastAPI
+Next.js
+Claude
+Speechmatics
+Thymia
+Track
+Hackathon
 
 **Clinical voice intelligence that listens for what patients don't say.**
 
@@ -52,16 +52,20 @@ flowchart LR
     DASH -->|"end of consult"| RPT["Claude Sonnet 4.6\nEvidence Report"]
 ```
 
+
+
 ### Signal pipeline
 
-| Stage | Service | Target latency |
-|---|---|---|
-| Medical transcription | Speechmatics RT | ~200 ms |
-| Distress / stress score (Helios) | Thymia | per utterance |
-| Mood / energy score (Apollo) | Thymia | per utterance |
-| Affect breakdown (Psyche) | Thymia | per utterance |
-| Minimisation flag gloss | Claude Haiku 4.5 | < 1 s |
-| End-of-consult evidence report | Claude Sonnet 4.6 | on demand |
+
+| Stage                            | Service           | Target latency |
+| -------------------------------- | ----------------- | -------------- |
+| Medical transcription            | Speechmatics RT   | ~200 ms        |
+| Distress / stress score (Helios) | Thymia            | per utterance  |
+| Mood / energy score (Apollo)     | Thymia            | per utterance  |
+| Affect breakdown (Psyche)        | Thymia            | per utterance  |
+| Minimisation flag gloss          | Claude Haiku 4.5  | < 1 s          |
+| End-of-consult evidence report   | Claude Sonnet 4.6 | on demand      |
+
 
 ---
 
@@ -80,22 +84,27 @@ graph TD
     C --> C1["Single laptop mic\ndiarization splits the two speakers"]
 ```
 
+
+
 ---
 
 ## Screenshots
 
 ### Landing page
-![Landing page showing the two consultation modes and the TrueVoice value proposition](docs/images/landing.png)
+
+Landing page showing the two consultation modes and the TrueVoice value proposition
 
 ### Clinician dashboard
+
 *Live transcript lane, Helios/Apollo/Psyche biomarker bars, and concordance flag cards — each flag pairs the minimisation phrase with the biomarker evidence that triggered it and Claude's gloss.*
 
-![Clinician dashboard — placeholder, screenshot to be added](docs/images/dashboard.png)
+Clinician dashboard — placeholder, screenshot to be added
 
 ### Evidence report
+
 *Clicking **Generate Report** at the end of the consult calls Claude Sonnet 4.6 with the full transcript, every biomarker reading, and every flag. The output is a structured one-page brief the GP can review and attach to the patient record.*
 
-![Evidence report — placeholder, screenshot to be added](docs/images/report.png)
+Evidence report — placeholder, screenshot to be added
 
 ---
 
@@ -113,23 +122,27 @@ graph TD
 
 ### Prerequisites
 
-| Tool | Version | Why |
-|---|---|---|
-| Python | ≥ 3.11 | Backend runtime |
-| [uv](https://docs.astral.sh/uv/) | latest | Backend deps / runner |
-| Node.js | ≥ 20 | Frontend runtime |
-| npm | ≥ 10 | Package install (lockfile is `package-lock.json`) |
-| A modern browser | Chrome, Edge, Safari 17+ | `AudioWorklet` + microphone permission |
+
+| Tool                             | Version                  | Why                                               |
+| -------------------------------- | ------------------------ | ------------------------------------------------- |
+| Python                           | ≥ 3.11                   | Backend runtime                                   |
+| [uv](https://docs.astral.sh/uv/) | latest                   | Backend deps / runner                             |
+| Node.js                          | ≥ 20                     | Frontend runtime                                  |
+| npm                              | ≥ 10                     | Package install (lockfile is `package-lock.json`) |
+| A modern browser                 | Chrome, Edge, Safari 17+ | `AudioWorklet` + microphone permission            |
+
 
 ### API keys
 
 You need three keys before running anything:
 
-| Variable | Where to get it |
-|---|---|
+
+| Variable               | Where to get it                                                                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------------ |
 | `SPEECHMATICS_API_KEY` | [speechmatics.com](https://www.speechmatics.com) — sign up, create an API key under *API Access* |
-| `THYMIA_API_KEY` | [thymia.ai](https://www.thymia.ai) — request access to the Sentinel SDK |
-| `ANTHROPIC_API_KEY` | [console.anthropic.com](https://console.anthropic.com) — create a key under *API Keys* |
+| `THYMIA_API_KEY`       | [thymia.ai](https://www.thymia.ai) — request access to the Sentinel SDK                          |
+| `ANTHROPIC_API_KEY`    | [console.anthropic.com](https://console.anthropic.com) — create a key under *API Keys*           |
+
 
 ### 1. Backend
 
@@ -247,16 +260,18 @@ TrueVoice/
 
 ## API Surface
 
-| Method | Path | Purpose |
-|---|---|---|
-| `GET` | `/health` | Liveness probe |
-| `POST` | `/api/rooms` | Create an ephemeral room, returns `{room_id, created_at_ms}` |
-| `GET` | `/api/rooms/{room_id}` | Check whether a room exists |
-| `POST` | `/api/report/{room_id}` | Trigger Claude Sonnet synthesis |
-| `GET` | `/api/report/{room_id}` | Fetch the generated report |
-| `WS` | `/ws/audio/{role}/{room_id}?mode=inperson` | Binary 40 ms PCM16 frames in |
-| `WS` | `/ws/dashboard/{room_id}` | JSON event stream out (with replay on connect) |
-| `WS` | `/ws/signal/{role}/{room_id}` | WebRTC signaling relay (telehealth) |
+
+| Method | Path                                       | Purpose                                                      |
+| ------ | ------------------------------------------ | ------------------------------------------------------------ |
+| `GET`  | `/health`                                  | Liveness probe                                               |
+| `POST` | `/api/rooms`                               | Create an ephemeral room, returns `{room_id, created_at_ms}` |
+| `GET`  | `/api/rooms/{room_id}`                     | Check whether a room exists                                  |
+| `POST` | `/api/report/{room_id}`                    | Trigger Claude Sonnet synthesis                              |
+| `GET`  | `/api/report/{room_id}`                    | Fetch the generated report                                   |
+| `WS`   | `/ws/audio/{role}/{room_id}?mode=inperson` | Binary 40 ms PCM16 frames in                                 |
+| `WS`   | `/ws/dashboard/{room_id}`                  | JSON event stream out (with replay on connect)               |
+| `WS`   | `/ws/signal/{role}/{room_id}`              | WebRTC signaling relay (telehealth)                          |
+
 
 ---
 
@@ -279,12 +294,15 @@ npm run build
 
 ## Team
 
-| Name | GitHub |
-|---|---|
-| Joan Torres Gordo | [@joant11](https://github.com/joant11) |
-| Indigo Luksch | [@IndigoLuksch](https://github.com/IndigoLuksch) |
-| Oriol Morros Vilaseca | [@omorros](https://github.com/omorros) |
+
+| Name                  | GitHub                                           |
+| --------------------- | ------------------------------------------------ |
+| Joan Torres Gordo     | [@joant11](https://github.com/joant11)           |
+| Indigo Luksch         | [@IndigoLuksch](https://github.com/IndigoLuksch) |
+| Oriol Morros Vilaseca | [@omorros](https://github.com/omorros)           |
+
 
 ---
 
 > **Disclaimer:** TrueVoice is a research-grade hackathon prototype. It is not a medical device and should not be used for clinical diagnosis.
+

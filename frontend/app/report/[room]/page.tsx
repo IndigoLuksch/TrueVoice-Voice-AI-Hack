@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import NavBar from "@/components/NavBar";
+import { biomarkerWindowRisk } from "@/lib/concordanceRisk";
 
 type Flag = {
   flag_id: string;
@@ -34,7 +35,8 @@ const THRESHOLDS: Record<string, number> = {
   worry: 0.65,
 };
 
-function riskScore(flags: Flag[]): number {
+/** Risk from concordance-flag evidence only (short biomarker names). */
+function riskScoreFromFlags(flags: Flag[]): number {
   let max = 0;
   for (const f of flags) {
     for (const b of f.biomarker_evidence) {
@@ -43,6 +45,12 @@ function riskScore(flags: Flag[]): number {
     }
   }
   return Math.min(100, Math.round(max * 70));
+}
+
+function sessionEndRoomMs(report: ReportBody): number {
+  const fromBio = report.biomarker_history.map((e) => e.ts_ms);
+  const fromTx = report.transcripts.map((t) => t.end_ms ?? t.start_ms ?? 0);
+  return Math.max(report.duration_sec * 1000, 0, ...fromBio, ...fromTx);
 }
 
 function RiskGauge({ score }: { score: number }) {
@@ -189,7 +197,15 @@ export default function ReportPage() {
   if (!report) return null;
 
   const nGaps = report.flags.length;
-  const score = riskScore(report.flags);
+  const roomEndMs = sessionEndRoomMs(report);
+  const { score: biomarkerGaugeScore, maxRatio: biomarkerRatio } = biomarkerWindowRisk(
+    report.biomarker_history,
+    roomEndMs || undefined,
+  );
+  const scoreFromFlags = riskScoreFromFlags(report.flags);
+  const score = Math.max(scoreFromFlags, biomarkerGaugeScore);
+  /** Match ConcordanceMeter: amber/red when max (value/threshold) in the window exceeds 0.85. */
+  const elevatedBiomarkersNoGaps = nGaps === 0 && biomarkerRatio > 0.85;
   const mins = Math.floor(report.duration_sec / 60);
   const secs = report.duration_sec % 60;
   const generatedAt = new Date(report.generated_at_ms).toLocaleString();
@@ -208,12 +224,20 @@ export default function ReportPage() {
             </div>
             <h1
               className={`text-4xl font-bold leading-tight ${
-                nGaps === 0 ? "text-emerald-600" : "text-red-600"
+                nGaps > 0
+                  ? "text-red-600"
+                  : elevatedBiomarkersNoGaps
+                    ? biomarkerRatio > 1.3
+                      ? "text-red-600"
+                      : "text-amber-600"
+                    : "text-emerald-600"
               }`}
             >
-              {nGaps === 0
-                ? "Patient aligned"
-                : `${nGaps} concordance gap${nGaps === 1 ? "" : "s"}`}
+              {nGaps > 0
+                ? `${nGaps} concordance gap${nGaps === 1 ? "" : "s"}`
+                : elevatedBiomarkersNoGaps
+                  ? "Elevated voice biomarkers"
+                  : "Patient aligned"}
             </h1>
             <div className="text-[11px] font-mono text-gray-400 mt-3 flex gap-3 flex-wrap">
               <span>room {room}</span>
@@ -268,6 +292,15 @@ export default function ReportPage() {
               </article>
             ))}
           </section>
+        ) : elevatedBiomarkersNoGaps ? (
+          <div className="mb-10 p-6 bg-amber-50 border border-amber-100 rounded">
+            <p className="text-sm text-amber-950">
+              No minimisation phrases were matched in patient speech (or diarization did not
+              attribute them to the patient), but voice biomarkers in the session were
+              elevated—consistent with the live concordance gauge. Review the summary and raw
+              biomarker timeline if needed.
+            </p>
+          </div>
         ) : (
           <div className="mb-10 p-6 bg-emerald-50 border border-emerald-100 rounded">
             <p className="text-sm text-emerald-800">
