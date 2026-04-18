@@ -10,7 +10,7 @@ import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { startAudioCapture, AudioCaptureHandle } from "@/lib/audioCapture";
 import { useDashboardEvents } from "@/lib/dashboardSocket";
 import Dashboard from "@/components/Dashboard";
-import { BACKEND_HTTP, BACKEND_WS, RoomCreateResponse } from "@/lib/types";
+import { BACKEND_WS, RoomCreateResponse } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type Status = "idle" | "requesting" | "live" | "ended";
@@ -30,7 +30,7 @@ export default function InPersonConsultation() {
     setError(null);
     setStatus("requesting");
     try {
-      const res = await fetch(`${BACKEND_HTTP}/api/rooms`, { method: "POST" });
+      const res = await fetch("/api/rooms", { method: "POST" });
       if (!res.ok) throw new Error(`POST /api/rooms failed: ${res.status}`);
       const room = (await res.json()) as RoomCreateResponse;
 

@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import NavBar from "@/components/NavBar";
-import { BACKEND_HTTP } from "@/lib/types";
 
 type Flag = {
   flag_id: string;
@@ -141,12 +140,12 @@ export default function ReportPage() {
     let cancelled = false;
     (async () => {
       try {
-        const post = await fetch(`${BACKEND_HTTP}/api/report/${room}`, { method: "POST" });
+        const post = await fetch(`/api/report/${encodeURIComponent(room)}`, { method: "POST" });
         if (!post.ok) {
           const body = await post.text();
           throw new Error(`POST ${post.status}: ${body}`);
         }
-        const get = await fetch(`${BACKEND_HTTP}/api/report/${room}`);
+        const get = await fetch(`/api/report/${encodeURIComponent(room)}`);
         if (!get.ok) throw new Error(`GET ${get.status}`);
         const data = (await get.json()) as ReportBody;
         if (!cancelled) {

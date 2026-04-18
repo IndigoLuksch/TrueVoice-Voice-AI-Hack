@@ -76,7 +76,13 @@ export type RoomCreateResponse = {
   created_at_ms: number;
 };
 
+/**
+ * Prefer same-origin HTTP API routes (`/api/...`) — see `next.config.ts` rewrites.
+ * Kept for scripts or rare direct backend calls.
+ */
 export const BACKEND_HTTP =
   process.env.NEXT_PUBLIC_BACKEND_HTTP_URL ?? "http://localhost:8000";
+
+/** WebSocket URL must point at the real backend (use `wss://` when the site is served over HTTPS). */
 export const BACKEND_WS =
   process.env.NEXT_PUBLIC_BACKEND_WS_URL ?? "ws://localhost:8000";

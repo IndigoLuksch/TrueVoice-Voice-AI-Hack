@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
-import { BACKEND_HTTP, RoomCreateResponse } from "@/lib/types";
+import { RoomCreateResponse } from "@/lib/types";
+import { normalizeRoomId } from "@/lib/utils";
 
 export default function OnlineLobbyPage() {
   const router = useRouter();
@@ -15,7 +16,7 @@ export default function OnlineLobbyPage() {
     setError(null);
     setLoading(role);
     try {
-      const res = await fetch(`${BACKEND_HTTP}/api/rooms`, { method: "POST" });
+      const res = await fetch("/api/rooms", { method: "POST" });
       if (!res.ok) throw new Error(`Could not create room (${res.status})`);
       const room = (await res.json()) as RoomCreateResponse;
       router.push(`/online/${role}/${room.room_id}`);
@@ -27,7 +28,7 @@ export default function OnlineLobbyPage() {
   }
 
   function joinExisting(role: "patient" | "clinician") {
-    const id = existingRoomId.trim();
+    const id = normalizeRoomId(existingRoomId);
     if (!id) {
       setError("Enter a room ID to join.");
       return;
@@ -78,6 +79,9 @@ export default function OnlineLobbyPage() {
         <div className="mt-12 border-t border-white/10 pt-10">
           <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-500 mb-4">
             Join with a room ID
+          </p>
+          <p className="text-xs text-neutral-500 mb-4 leading-relaxed">
+            Paste the <span className="font-mono text-neutral-300">8 letters/numbers</span> from whoever created the room first. If each person clicked &ldquo;I&rsquo;m the patient&rdquo; / &ldquo;I&rsquo;m the clinician&rdquo; separately, you have <span className="text-neutral-300">two different rooms</span> — pick one id and both join that.
           </p>
           <input
             type="text"

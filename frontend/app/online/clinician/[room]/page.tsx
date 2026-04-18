@@ -6,12 +6,13 @@ import React, { useRef, useState } from "react";
 import { startAudioCapture, AudioCaptureHandle } from "@/lib/audioCapture";
 import { useDashboardEvents } from "@/lib/dashboardSocket";
 import Dashboard from "@/components/Dashboard";
-import { BACKEND_HTTP, BACKEND_WS } from "@/lib/types";
+import { BACKEND_WS } from "@/lib/types";
+import { normalizeRoomId } from "@/lib/utils";
 
 export default function OnlineClinicianPage() {
   const params = useParams();
   const router = useRouter();
-  const roomId = params.room as string;
+  const roomId = normalizeRoomId(params.room);
 
   const [status, setStatus] = useState<"idle" | "starting" | "live" | "ended">("idle");
   const [error, setError] = useState<string | null>(null);
@@ -20,15 +21,32 @@ export default function OnlineClinicianPage() {
 
   const events = useDashboardEvents(status === "live" ? roomId : null);
 
+  if (!roomId) {
+    return (
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center gap-4 px-6">
+        <p className="text-red-400 font-mono text-sm">Invalid room in URL.</p>
+        <Link href="/online" className="text-sm underline text-neutral-400 hover:text-white">
+          Back to telehealth
+        </Link>
+      </div>
+    );
+  }
+
   const start = async () => {
     setError(null);
     setStatus("starting");
     try {
-      const check = await fetch(`${BACKEND_HTTP}/api/rooms/${roomId}`);
-      if (!check.ok) throw new Error(`Room check failed (${check.status})`);
+      const check = await fetch(`/api/rooms/${encodeURIComponent(roomId)}`);
+      if (!check.ok) {
+        throw new Error(
+          `Could not verify room (${check.status}). If this is production, set BACKEND_HTTP_ORIGIN or NEXT_PUBLIC_BACKEND_HTTP_URL on the frontend service so /api proxies to your FastAPI host.`,
+        );
+      }
       const meta = (await check.json()) as { exists: boolean };
       if (!meta.exists) {
-        throw new Error("This room does not exist or has expired. Create a new session from /online.");
+        throw new Error(
+          "This room was not found on the server. Use the exact 8-character id from the person who created the room, or create a new session — rooms are cleared if the backend restarted.",
+        );
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({
