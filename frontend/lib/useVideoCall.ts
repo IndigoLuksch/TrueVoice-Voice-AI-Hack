@@ -27,17 +27,31 @@ const INITIAL: VideoCallState = {
   error: null,
 };
 
+const METERED_USER = "549f459ae4a48f00b18c813d";
+const METERED_CRED = "FzJf5f9bRbxp0GLm";
+
 const ICE_SERVERS: RTCIceServer[] = [
+  { urls: "stun:stun.relay.metered.ca:80" },
   { urls: "stun:stun.l.google.com:19302" },
-  { urls: "stun:stun1.l.google.com:19302" },
   {
-    urls: [
-      "turn:openrelay.metered.ca:80",
-      "turn:openrelay.metered.ca:443",
-      "turn:openrelay.metered.ca:443?transport=tcp",
-    ],
-    username: "openrelayproject",
-    credential: "openrelayproject",
+    urls: "turn:global.relay.metered.ca:80",
+    username: METERED_USER,
+    credential: METERED_CRED,
+  },
+  {
+    urls: "turn:global.relay.metered.ca:80?transport=tcp",
+    username: METERED_USER,
+    credential: METERED_CRED,
+  },
+  {
+    urls: "turn:global.relay.metered.ca:443",
+    username: METERED_USER,
+    credential: METERED_CRED,
+  },
+  {
+    urls: "turns:global.relay.metered.ca:443?transport=tcp",
+    username: METERED_USER,
+    credential: METERED_CRED,
   },
 ];
 
